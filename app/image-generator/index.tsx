@@ -34,7 +34,37 @@ export default function ImageGen() {
 
     // Calculate width and height based on aspect ratio
     try {
-      const genUrl = await submitGenReq(prompt, aspectRatio);
+      let width, height;
+      const [w, h] = aspectRatio.split(":").map(Number);
+      if (w > h) {
+        width = 512;
+        height = Math.round((512 * h) / w);
+      } else {
+        height = 512;
+        width = Math.round((512 * w) / h);
+      }
+      const response = await fetch(
+        "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_HGFACE_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            inputs: prompt,
+            parameters: { width, height },
+          }),
+        }
+      );
+      console.log("Response for image generation: ", response);
+
+      if (!response.ok) {
+        throw new Error("Failed to generate image from the server");
+      }
+      const genBlob = await response.blob();
+
+      const genUrl = URL.createObjectURL(genBlob);
       console.log("Generated image URL: ", genUrl);
 
       toast({

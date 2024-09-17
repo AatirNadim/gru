@@ -28,15 +28,13 @@ export const submitGenReq = async (prompt: string, aspectRatio: string) => {
         }),
       }
     );
-    console.log("api key: ", process.env.NEXT_PUBLIC_HGFACE_TOKEN);
     console.log("Response for image generation: ", response);
 
     if (!response.ok) {
       throw new Error("Failed to generate image from the server");
     }
     const blob = await response.blob();
-    const imageUrl = URL.createObjectURL(blob);
-    return imageUrl;
+    return blob;
   } catch (error) {
     console.error("Error generating image: ", error);
     throw error;
